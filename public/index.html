@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A local-first AI CV maker with custom templates and polished exports.">
+  <title>CV Forge — AI CV Maker</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="CV Forge home">
+      <span class="brand-mark">CF</span>
+      <span>
+        <strong>CV Forge</strong>
+        <small>AI CV maker</small>
+      </span>
+    </a>
+    <div class="topbar-actions">
+      <span id="api-status" class="status-pill">Checking AI…</span>
+      <button id="load-demo" class="button ghost" type="button">Load demo</button>
+      <button id="reset-app" class="button ghost danger" type="button">Reset</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="control-panel" aria-label="CV editor">
+      <div class="tabs" role="tablist" aria-label="Editor tabs">
+        <button class="tab active" data-tab="story" role="tab" aria-selected="true">AI story</button>
+        <button class="tab" data-tab="details" role="tab" aria-selected="false">Details</button>
+        <button class="tab" data-tab="template" role="tab" aria-selected="false">Template</button>
+      </div>
+
+      <div class="tab-panel active" data-panel="story">
+        <div class="panel-heading">
+          <p class="eyebrow">Start messy</p>
+          <h1>Tell the story. Let AI structure it.</h1>
+          <p>Paste notes, a biography, old CV text, or a career brain-dump. The assistant extracts facts, strengthens accomplishments, and flags missing evidence.</p>
+        </div>
+
+        <label class="field-label" for="target-role">Target role</label>
+        <input id="target-role" class="input" type="text" placeholder="e.g. Senior Product Designer">
+
+        <label class="field-label" for="story-input">Your experience and accomplishments</label>
+        <textarea id="story-input" class="textarea story-input" placeholder="Example: I joined a small SaaS team in 2023. Support tickets showed new customers struggled with setup, so I redesigned onboarding with the PM and reduced setup time from about 40 minutes to 25…"></textarea>
+
+        <div class="file-row">
+          <label class="button ghost file-button">
+            Import .txt or .md
+            <input id="story-file" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
+          </label>
+          <span id="story-count" class="muted">0 characters</span>
+        </div>
+
+        <div class="ai-actions">
+          <button id="extract-ai" class="button primary" type="button">Build CV with AI</button>
+          <button id="improve-ai" class="button secondary" type="button">Improve current CV</button>
+        </div>
+        <p class="privacy-note">Your draft stays in this browser. AI requests are sent only when you press an AI button, and the server is configured not to store the response.</p>
+
+        <div id="ai-progress" class="progress-card hidden" role="status" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          <div>
+            <strong>Shaping your evidence into a CV…</strong>
+            <span>Extracting facts, outcomes, and gaps.</span>
+          </div>
+        </div>
+
+        <div id="coach-card" class="coach-card hidden">
+          <div>
+            <p class="eyebrow">AI coach</p>
+            <h2>What would make this stronger</h2>
+          </div>
+          <div id="coach-notes"></div>
+          <div id="follow-up-questions"></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" data-panel="details">
+        <div class="panel-heading compact">
+          <p class="eyebrow">Edit precisely</p>
+          <h1>Your CV data</h1>
+          <p>Every field updates the preview immediately. Nothing is locked behind the AI.</p>
+        </div>
+        <div id="details-form"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="template">
+        <div class="panel-heading compact">
+          <p class="eyebrow">Choose the look</p>
+          <h1>Layouts and custom text</h1>
+          <p>Use a polished visual layout or upload your own bracket-based text template.</p>
+        </div>
+
+        <div class="template-grid" id="template-grid">
+          <button class="template-card active" data-template="slate" type="button">
+            <span class="template-thumb slate-thumb"></span>
+            <strong>Slate</strong>
+            <small>Clean, ATS-first</small>
+          </button>
+          <button class="template-card" data-template="halo" type="button">
+            <span class="template-thumb halo-thumb"></span>
+            <strong>Halo</strong>
+            <small>Modern two-column</small>
+          </button>
+          <button class="template-card" data-template="editorial" type="button">
+            <span class="template-thumb editorial-thumb"></span>
+            <strong>Editorial</strong>
+            <small>Bold and spacious</small>
+          </button>
+          <button class="template-card" data-template="custom" type="button">
+            <span class="template-thumb custom-thumb">{{ }}</span>
+            <strong>Custom text</strong>
+            <small>Your own format</small>
+          </button>
+        </div>
+
+        <div class="custom-template-wrap">
+          <div class="section-title-row">
+            <div>
+              <h2>Custom formatted text</h2>
+              <p>Use placeholders and loops, then export the filled result as TXT.</p>
+            </div>
+            <label class="button ghost file-button small">
+              Import template
+              <input id="template-file" type="file" accept=".txt,.md,text/plain,text/markdown" hidden>
+            </label>
+          </div>
+          <textarea id="custom-template" class="textarea code-textarea" spellcheck="false"></textarea>
+          <details class="placeholder-help">
+            <summary>Placeholder reference</summary>
+            <code>{{personal.name}}</code>
+            <code>{{personal.title}}</code>
+            <code>{{summary}}</code>
+            <code>{{skills}}</code>
+            <code>{{#experience}}…{{/experience}}</code>
+            <code>{{role}}</code>
+            <code>{{organization}}</code>
+            <code>{{achievements}}</code>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="preview-panel" aria-label="CV preview">
+      <div class="preview-toolbar">
+        <div>
+          <p class="eyebrow">Live preview</p>
+          <strong id="preview-label">Slate template</strong>
+        </div>
+        <div class="export-menu">
+          <button id="print-cv" class="button primary" type="button">Print / PDF</button>
+          <button id="download-html" class="button ghost" type="button">HTML</button>
+          <button id="download-json" class="button ghost" type="button">JSON</button>
+          <button id="download-txt" class="button ghost" type="button">TXT</button>
+        </div>
+      </div>
+      <div class="paper-stage">
+        <article id="cv-preview" class="cv-paper template-slate" aria-label="Generated CV"></article>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

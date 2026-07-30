@@ -1,0 +1,16 @@
+{
+  "name": "cv-forge-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first AI CV maker with configurable OpenAI model support.",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "test": "node --test",
+    "check": "node --check server.mjs && node --check public/app.js && node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
