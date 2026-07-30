@@ -1,85 +1,45 @@
 # CV Forge — Product and Implementation Plan
 
-## 1. Product goal
+## Product goal
 
-Help a person turn unstructured memories, notes, an old CV, or a career conversation into a truthful, polished CV without forcing them to fill a long form first.
+Help users turn unstructured career evidence into a truthful, polished CV without locking the application to one AI vendor or requiring a specific billing model.
 
-The core product promise is:
+## Principles
 
-> Tell us what happened in your own words. CV Forge structures the facts, strengthens the writing, asks for missing evidence, and gives you a CV you can still edit by hand.
+1. **Facts before fluency** — never invent credentials, dates, employers, metrics, or achievements.
+2. **Provider independence** — use a small OpenAI-compatible adapter instead of vendor-specific application code.
+3. **Authentication is optional** — local and private endpoints may require no key.
+4. **AI-assisted, not AI-owned** — every generated field remains editable.
+5. **One source of truth** — structured CV JSON drives every template and export.
+6. **Local-first** — drafts and non-secret preferences stay in the browser.
 
-## 2. Product principles
+## Implemented flow
 
-1. **Facts before fluency** — the AI must not invent metrics, employers, dates, technologies, or qualifications.
-2. **AI-assisted, not AI-owned** — every generated field remains directly editable.
-3. **One source of truth** — structured CV JSON drives all layouts and exports.
-4. **Local-first by default** — drafts work without an account or database.
-5. **Useful without AI** — templates, editing, preview, and export remain functional when no API key is configured.
-6. **ATS and human readability** — provide a conservative layout as well as more expressive options.
+1. Enter a provider base URL and model.
+2. Select auto-detection, Responses, or Chat Completions.
+3. Choose no authentication, bearer token, or a custom key header.
+4. Paste career notes and optionally name a target role.
+5. Generate or improve the CV.
+6. Review coaching questions and edit every field.
+7. Choose a visual or custom text template.
+8. Export PDF, HTML, JSON, or TXT.
 
-## 3. Primary user flow
+## Provider architecture
 
-1. User enters a target role.
-2. User pastes or imports free-form career notes.
-3. AI extracts a structured profile and rewrites achievements.
-4. AI provides coaching notes and precise follow-up questions.
-5. User corrects and completes fields in the details editor.
-6. User chooses a visual layout or imports a custom text template.
-7. User exports PDF, HTML, JSON, or filled TXT.
+The Node server acts as a narrow compatibility proxy. It accepts non-secret provider settings with each request and optionally receives an ephemeral key. It then:
 
-## 4. MVP capabilities implemented
+- validates the base URL;
+- blocks unsafe hop-by-hop custom headers;
+- sends no auth header in `none` mode;
+- supports `/responses` and `/chat/completions`;
+- attempts strict JSON Schema output first;
+- retries without structured-output fields when the provider rejects them;
+- parses standard Responses and Chat Completions payloads;
+- enforces request limits, body limits, and timeouts.
 
-### AI layer
+Environment configuration can provide server-side defaults and secrets without exposing them to the browser.
 
-- Server-side OpenAI Responses API integration
-- Default model: `gpt-5.6-sol`
-- Model and reasoning effort configurable through environment variables
-- Strict JSON Schema output
-- Extraction, improvement, and target-role tailoring modes
-- Evidence-first prompt that requires empty values rather than invented facts
-- Follow-up question generation
-- No API key in browser code
-- `store: false` on model requests
-- Stable hashed safety identifier
-
-### Editing layer
-
-- Personal details
-- Professional summary
-- Skills
-- Work experience with achievement bullets
-- Education
-- Projects
-- Certifications
-- Awards
-- Languages
-- Additional achievements
-- Local browser autosave
-- Demo profile and full reset
-
-### Presentation layer
-
-- Slate: conservative single-column ATS layout
-- Halo: modern two-column layout
-- Editorial: bold, spacious layout
-- A4 preview and print styling
-- Responsive editor and preview
-
-### Template layer
-
-- Scalar `{{path.to.value}}` placeholders
-- `{{#array}}...{{/array}}` loops
-- Plain text and Markdown template import
-- Filled TXT export
-
-### Export layer
-
-- Browser print / Save as PDF
-- Standalone HTML
-- Structured JSON
-- Rendered custom TXT
-
-## 5. Data model
+## Data model
 
 ```json
 {
@@ -94,17 +54,7 @@ The core product promise is:
   },
   "summary": "",
   "skills": [],
-  "experience": [
-    {
-      "role": "",
-      "organization": "",
-      "location": "",
-      "start": "",
-      "end": "",
-      "summary": "",
-      "achievements": []
-    }
-  ],
+  "experience": [],
   "education": [],
   "projects": [],
   "certifications": [],
@@ -114,98 +64,39 @@ The core product promise is:
 }
 ```
 
-## 6. Why this architecture
+## Production roadmap
 
-### Plain Node server
+### Provider improvements
 
-The MVP uses Node's built-in HTTP server and `fetch`, with no runtime dependencies. This makes the project easy to inspect, run, and deploy while avoiding framework churn.
+- Named provider presets
+- Model discovery dropdown populated by `/models`
+- Per-provider capability caching
+- Configurable custom request fields
+- Streaming status updates
+- Outbound endpoint allowlists for hosted deployments
 
-### Browser-rendered layouts
+### CV improvements
 
-A browser preview gives immediate feedback and makes print-to-PDF available without a PDF dependency. A later SaaS version can add server-side Chromium rendering for pixel-consistent exports.
+- DOCX and selectable-text PDF imports
+- Job-description relevance mapping
+- Evidence links for every generated bullet
+- CV linting and page-overflow checks
+- Multiple tailored CV variants from one profile
+- Server-rendered PDF export
 
-### Structured AI output
+### SaaS foundations
 
-The AI returns the exact JSON shape required by the editor. This is safer and more maintainable than asking the model to write finished HTML or mutate a template directly.
+- Authentication and encrypted storage
+- Version history and multi-device sync
+- Share links and collaboration
+- Per-user quotas and audit logs excluding CV content
 
-### Local-first storage
+## Definition of done
 
-Local storage is enough for an MVP and prevents premature account, database, and privacy complexity. The data model is already suitable for later persistence.
-
-## 7. Production roadmap
-
-### Phase 1 — stronger document ingestion
-
-- Parse DOCX and selectable-text PDF files
-- Import LinkedIn profile exports
-- Detect duplicate roles and inconsistent dates
-- Add an evidence inbox where each bullet links to its source note
-
-### Phase 2 — job-specific tailoring
-
-- Paste a job description
-- Produce a relevance map between requirements and verified evidence
-- Show keyword coverage without keyword stuffing
-- Generate several CV variants from one canonical profile
-- Add a cover-letter and interview-story generator using the same evidence base
-
-### Phase 3 — quality controls
-
-- CV linting for vague verbs, repetition, unsupported claims, date gaps, and excessive length
-- ATS parsing preview
-- Page overflow warnings
-- Prompt and model evaluation suite with a set of anonymized fixtures
-- Human review workflow for sensitive or executive CVs
-
-### Phase 4 — SaaS foundations
-
-- Authentication
-- Encrypted database storage
-- Version history
-- Multi-device sync
-- Share links with expiration controls
-- Team and career-coach collaboration
-- Billing, usage caps, and model routing
-
-### Phase 5 — template marketplace
-
-- Visual template builder
-- Template schema validation
-- Theme tokens for spacing, typography, and accent colors
-- Community and premium layouts
-- Locale-aware formats and multilingual CV variants
-
-## 8. Security and privacy checklist
-
-- Keep model credentials server-side
-- Never log raw CV content
-- Encrypt stored personal data
-- Support account deletion and export
-- Add per-user and per-IP rate limits
-- Add budget ceilings and request quotas
-- Scan uploaded binary documents
-- Protect public share links from indexing by default
-- Document model retention and data-processing choices clearly
-- Review legal requirements for personal and employment data in target markets
-
-## 9. Success metrics
-
-- Time from blank page to first usable draft
-- Percentage of AI-created fields manually corrected
-- Percentage of bullets with a clear action and outcome
-- Number of unresolved follow-up questions
-- Export completion rate
-- Repeat usage for a second job application
-- User-rated factual accuracy
-- Cost per completed CV
-
-## 10. Definition of done for this MVP
-
-- Runs locally with Node.js and no dependency install
-- Works without an API key in manual/demo mode
-- Uses a server-only API key when configured
-- Extracts a strict structured profile through GPT-5.6 Sol
-- Renders all three visual layouts
-- Fills a user-provided text template
-- Exports PDF through print, HTML, JSON, and TXT
-- Passes syntax checks and template-engine tests
+- Runs on Node.js 20+ without dependency installation
+- Works with a no-auth OpenAI-compatible endpoint
+- Supports Responses and Chat Completions formats
+- Keeps browser-entered tokens out of persistent storage
+- Renders three visual templates and custom text templates
+- Exports PDF, HTML, JSON, and TXT
+- Passes syntax, provider-adapter, and template-engine tests
