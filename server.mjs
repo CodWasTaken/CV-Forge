@@ -1,7 +1,8 @@
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
-import { handleAiParse, handleProviderTest, providerStatus } from './lib/ai.mjs';
+import { handleAiParse, handleAiWebsite, handleProviderTest, providerStatus } from './lib/ai.mjs';
 import { createRateLimiter, json, loadLocalEnv, serveStatic, setSecurityHeaders } from './lib/http.mjs';
+import { exportDirectory, handleExportStatus, handleWebsiteExport } from './lib/website-export.mjs';
 
 const root = fileURLToPath(new URL('./public', import.meta.url));
 loadLocalEnv(fileURLToPath(new URL('./.env', import.meta.url)));
@@ -29,6 +30,18 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'POST' && url.pathname === '/api/ai/parse') {
       return await handleAiParse(req, res, context);
     }
+    if (req.method === 'POST' && url.pathname === '/api/ai/website') {
+      return await handleAiWebsite(req, res, context);
+    }
+    if (req.method === 'GET' && url.pathname === '/api/export/status') {
+      return await handleExportStatus(req, res, context);
+    }
+    if (req.method === 'POST' && url.pathname === '/api/export/website') {
+      return await handleWebsiteExport(req, res, context);
+    }
+    if ((req.method === 'GET' || req.method === 'HEAD') && url.pathname.startsWith('/exports/')) {
+      return await serveStatic(exportDirectory(process.env), url.pathname.slice('/exports'.length), req.method === 'HEAD', res, false);
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       return json(res, 405, { error: 'Method not allowed.' });
     }
@@ -46,6 +59,7 @@ server.listen(PORT, () => {
   console.log(defaults.baseUrl && defaults.model
     ? `Default provider: ${defaults.name} · ${defaults.model} · ${defaults.baseUrl}`
     : 'Default provider: configure in the browser or .env');
+  console.log(`Website exports: ${exportDirectory(process.env)}`);
 });
 
 server.on('error', (error) => {

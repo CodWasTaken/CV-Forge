@@ -29,6 +29,7 @@
         <button class="tab active" data-tab="story" role="tab" aria-selected="true">AI story</button>
         <button class="tab" data-tab="details" role="tab" aria-selected="false">Details</button>
         <button class="tab" data-tab="template" role="tab" aria-selected="false">Template</button>
+        <button class="tab" data-tab="website" role="tab" aria-selected="false">Website</button>
       </div>
 
       <div class="tab-panel active" data-panel="story">
@@ -140,6 +141,57 @@
           </details>
         </div>
       </div>
+
+
+      <div class="tab-panel" data-panel="website">
+        <div class="panel-heading compact">
+          <p class="eyebrow">Publish differently</p>
+          <h1>Modern website CV</h1>
+          <p>Let the AI shape the portfolio narrative, then export a complete static website you can host anywhere.</p>
+        </div>
+
+        <div class="website-callout">
+          <div>
+            <strong>AI creates the presentation plan</strong>
+            <p>The site is rendered from your verified CV data as safe, editable HTML, CSS, and JavaScript.</p>
+          </div>
+          <button id="generate-website-ai" class="button primary" type="button">Generate website with AI</button>
+        </div>
+
+        <div class="section-title-row website-section-title">
+          <div><h2>Website style</h2><p>Pick a starting point. AI may change it when generating.</p></div>
+        </div>
+        <div class="template-grid website-theme-grid" id="website-theme-grid">
+          <button class="template-card active" data-website-theme="aurora" type="button">
+            <span class="template-thumb website-thumb aurora-thumb"></span><strong>Aurora</strong><small>Dark and expressive</small>
+          </button>
+          <button class="template-card" data-website-theme="studio" type="button">
+            <span class="template-thumb website-thumb studio-thumb"></span><strong>Studio</strong><small>Warm and editorial</small>
+          </button>
+          <button class="template-card" data-website-theme="mono" type="button">
+            <span class="template-thumb website-thumb mono-thumb"></span><strong>Mono</strong><small>Minimal and technical</small>
+          </button>
+        </div>
+
+        <div class="form-grid website-copy-grid">
+          <div class="field-group"><label for="website-accent">Accent color</label><input id="website-accent" class="input color-input" type="color"></div>
+          <div class="field-group"><label for="website-folder">Export folder name</label><input id="website-folder" class="input" type="text" placeholder="jane-doe-website"></div>
+          <div class="field-group full"><label for="website-headline">Hero headline</label><input id="website-headline" class="input" type="text"></div>
+          <div class="field-group full"><label for="website-subheadline">Hero summary</label><textarea id="website-subheadline" class="textarea" rows="4"></textarea></div>
+          <div class="field-group full"><label for="website-about">About copy</label><textarea id="website-about" class="textarea" rows="5"></textarea></div>
+          <div class="field-group full"><label for="website-contact">Contact copy</label><textarea id="website-contact" class="textarea" rows="3"></textarea></div>
+        </div>
+
+        <div class="export-location-card">
+          <div><span class="eyebrow">Local export directory</span><code id="website-export-directory">Loading…</code></div>
+          <button id="save-website" class="button primary" type="button">Save website files</button>
+        </div>
+        <div id="website-save-result" class="website-save-result hidden">
+          <div><strong>Website saved</strong><code id="website-saved-path"></code></div>
+          <button id="open-saved-website" class="button ghost" type="button">Open website</button>
+        </div>
+        <p class="privacy-note">Change the base folder with <code>CV_EXPORT_DIR</code> in <code>.env</code>. Each export contains index.html, styles.css, script.js, profile.json, and site.json.</p>
+      </div>
     </section>
 
     <section class="preview-panel" aria-label="CV preview">
@@ -148,15 +200,26 @@
           <p class="eyebrow">Live preview</p>
           <strong id="preview-label">Slate template</strong>
         </div>
-        <div class="export-menu">
-          <button id="print-cv" class="button primary" type="button">Print / PDF</button>
-          <button id="download-html" class="button ghost" type="button">HTML</button>
-          <button id="download-json" class="button ghost" type="button">JSON</button>
-          <button id="download-txt" class="button ghost" type="button">TXT</button>
+        <div class="preview-actions">
+          <div class="output-switch" role="group" aria-label="Output type">
+            <button class="output-option active" data-output-mode="pdf" type="button">PDF CV</button>
+            <button class="output-option" data-output-mode="website" type="button">Website CV</button>
+          </div>
+          <div class="export-menu" data-export-menu="pdf">
+            <button id="print-cv" class="button primary" type="button">Print / PDF</button>
+            <button id="download-html" class="button ghost" type="button">HTML</button>
+            <button id="download-json" class="button ghost" type="button">JSON</button>
+            <button id="download-txt" class="button ghost" type="button">TXT</button>
+          </div>
+          <div class="export-menu hidden" data-export-menu="website">
+            <button id="save-website-toolbar" class="button primary" type="button">Save website</button>
+            <button id="website-tab-button" class="button ghost" type="button">Website settings</button>
+          </div>
         </div>
       </div>
       <div class="paper-stage">
         <article id="cv-preview" class="cv-paper template-slate" aria-label="Generated CV"></article>
+        <iframe id="website-preview" class="website-preview hidden" title="Generated website CV preview" sandbox="allow-popups allow-popups-to-escape-sandbox"></iframe>
       </div>
     </section>
   </main>

@@ -16,7 +16,7 @@
 
   window.fetch = async (input, init = {}) => {
     const url = typeof input === 'string' ? input : input?.url;
-    if (url === '/api/ai/parse' && String(init.method || 'GET').toUpperCase() === 'POST') {
+    if (typeof url === 'string' && url.startsWith('/api/ai/') && String(init.method || 'GET').toUpperCase() === 'POST') {
       try {
         const body = JSON.parse(init.body || '{}');
         body.provider = currentProvider();
