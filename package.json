@@ -1,14 +1,14 @@
 {
   "name": "cv-forge-ai",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
-  "description": "Local-first AI CV maker with configurable OpenAI-compatible providers.",
+  "description": "Local-first AI CV maker with configurable OpenAI-compatible providers and static website CV exports.",
   "scripts": {
     "start": "node server.mjs",
     "dev": "node --watch server.mjs",
     "test": "node --test",
-    "check": "node --check server.mjs && node --check lib/provider.mjs && node --check lib/ai.mjs && node --check lib/http.mjs && node --check public/provider.js && node --check public/app.js && node --test"
+    "check": "node --check server.mjs && node --check lib/provider.mjs && node --check lib/ai.mjs && node --check lib/http.mjs && node --check lib/website-export.mjs && node --check public/lib/website.mjs && node --check public/provider.js && node --check public/app.js && node --test"
   },
   "engines": {
     "node": ">=20"
