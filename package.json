@@ -8,7 +8,7 @@
     "start": "node server.mjs",
     "dev": "node --watch server.mjs",
     "test": "node --test",
-    "check": "node --check server.mjs && node --check lib/provider.mjs && node --check lib/ai.mjs && node --check lib/http.mjs && node --check lib/website-export.mjs && node --check public/lib/website.mjs && node --check public/provider.js && node --check public/app.js && node --test"
+    "check": "node --check server.mjs && node --check lib/provider.mjs && node --check lib/ai.mjs && node --check lib/http.mjs && node --check lib/website-export.mjs && node --check public/lib/website.mjs && node --check public/lib/website-config.mjs && node --check public/lib/website-render.mjs && node --check public/lib/website-sections.mjs && node --check public/lib/website-utils.mjs && node --check public/lib/website-theme.mjs && node --check public/provider.js && node --check public/website-ui-actions.mjs && node --check public/website-ui.js && node --check public/app.js && node --test"
   },
   "engines": {
     "node": ">=20"

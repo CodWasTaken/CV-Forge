@@ -2,101 +2,109 @@
 
 ## Product goal
 
-Help users turn unstructured career evidence into a truthful, polished CV without locking the application to one AI vendor or requiring a specific billing model.
+Turn one verified career profile into either a conventional application document or a personal portfolio website without duplicating the user’s data or locking the product to one model provider.
 
-## Principles
+## Core principles
 
-1. **Facts before fluency** — never invent credentials, dates, employers, metrics, or achievements.
-2. **Provider independence** — use a small OpenAI-compatible adapter instead of vendor-specific application code.
-3. **Authentication is optional** — local and private endpoints may require no key.
-4. **AI-assisted, not AI-owned** — every generated field remains editable.
-5. **One source of truth** — structured CV JSON drives every template and export.
-6. **Local-first** — drafts and non-secret preferences stay in the browser.
+1. **Facts before fluency** — generated copy must remain grounded in the profile and source notes.
+2. **One source of truth** — the structured CV profile drives PDF, text, HTML, and website outputs.
+3. **Safe generation boundary** — AI produces structured copy and presentation choices; application code produces executable website files.
+4. **Provider independence** — support OpenAI-compatible Responses and Chat Completions endpoints, with optional authentication.
+5. **Local ownership** — drafts stay in the browser and website files are saved to a user-controlled local directory.
+6. **Portable output** — exported websites run as plain static files with no framework or build step.
 
-## Implemented flow
+## Implemented output modes
 
-1. Enter a provider base URL and model.
-2. Select auto-detection, Responses, or Chat Completions.
-3. Choose no authentication, bearer token, or a custom key header.
-4. Paste career notes and optionally name a target role.
-5. Generate or improve the CV.
-6. Review coaching questions and edit every field.
-7. Choose a visual or custom text template.
-8. Export PDF, HTML, JSON, or TXT.
+### Standard CV
 
-## Provider architecture
+- Slate, Halo, and Editorial A4 layouts
+- Custom formatted text templates
+- Print/PDF, standalone HTML, JSON, and TXT exports
 
-The Node server acts as a narrow compatibility proxy. It accepts non-secret provider settings with each request and optionally receives an ephemeral key. It then:
+### Website CV
 
-- validates the base URL;
-- blocks unsafe hop-by-hop custom headers;
-- sends no auth header in `none` mode;
-- supports `/responses` and `/chat/completions`;
-- attempts strict JSON Schema output first;
-- retries without structured-output fields when the provider rejects them;
-- parses standard Responses and Chat Completions payloads;
-- enforces request limits, body limits, and timeouts.
+- Aurora, Studio, and Mono themes
+- AI-generated hero, about, experience/project framing, CTA copy, section order, and featured-item selection
+- Editable copy and accent color
+- Responsive live preview
+- Static export containing HTML, CSS, JavaScript, profile JSON, and website-plan JSON
+- Configurable `CV_EXPORT_DIR`
+- Local preview route for saved sites
 
-Environment configuration can provide server-side defaults and secrets without exposing them to the browser.
+## Website generation model
 
-## Data model
+The provider receives:
 
-```json
-{
-  "personal": {
-    "name": "",
-    "title": "",
-    "email": "",
-    "phone": "",
-    "location": "",
-    "website": "",
-    "linkedin": ""
-  },
-  "summary": "",
-  "skills": [],
-  "experience": [],
-  "education": [],
-  "projects": [],
-  "certifications": [],
-  "awards": [],
-  "languages": [],
-  "achievements": []
-}
+- verified profile JSON;
+- source career notes;
+- target role;
+- current website settings.
+
+It returns a strict website-plan object. It never returns executable code. The deterministic renderer then:
+
+- escapes all user/model text;
+- selects verified experience and project records by index;
+- creates accessible semantic HTML;
+- creates responsive CSS based on a constrained theme and accent color;
+- creates minimal progressive-enhancement JavaScript;
+- saves the complete bundle below the configured export root.
+
+## Local export design
+
+Default destination:
+
+```text
+<project>/exports/<sanitized-folder-name>/
 ```
 
-## Production roadmap
+Override:
 
-### Provider improvements
+```env
+CV_EXPORT_DIR=/absolute/or/relative/path
+```
 
-- Named provider presets
-- Model discovery dropdown populated by `/models`
-- Per-provider capability caching
-- Configurable custom request fields
-- Streaming status updates
-- Outbound endpoint allowlists for hosted deployments
+Security controls:
 
-### CV improvements
+- folder names are sanitized;
+- traversal outside the export root is rejected;
+- provider credentials are not included in output;
+- exported files are served without injecting CV Forge application assets.
+
+## Roadmap
+
+### Website customization
+
+- Section visibility and drag-and-drop ordering
+- Typography presets
+- Custom domain publishing helpers
+- Social preview image generation
+- Optional profile photograph and image optimization
+- Project screenshots and media galleries
+- ZIP download in addition to local folder export
+
+### CV intelligence
 
 - DOCX and selectable-text PDF imports
-- Job-description relevance mapping
-- Evidence links for every generated bullet
-- CV linting and page-overflow checks
-- Multiple tailored CV variants from one profile
-- Server-rendered PDF export
+- Job-description relevance maps
+- Evidence links for every generated claim
+- ATS linting and page overflow warnings
+- Multiple tailored variants from one profile
 
-### SaaS foundations
+### Production deployment
 
-- Authentication and encrypted storage
-- Version history and multi-device sync
-- Share links and collaboration
-- Per-user quotas and audit logs excluding CV content
+- Per-user encrypted storage
+- Isolated export workspaces
+- Authenticated share links
+- Provider endpoint allowlists
+- Audit logs excluding CV content
+- Server-side PDF rendering
 
 ## Definition of done
 
-- Runs on Node.js 20+ without dependency installation
-- Works with a no-auth OpenAI-compatible endpoint
-- Supports Responses and Chat Completions formats
-- Keeps browser-entered tokens out of persistent storage
-- Renders three visual templates and custom text templates
-- Exports PDF, HTML, JSON, and TXT
-- Passes syntax, provider-adapter, and template-engine tests
+- User can choose PDF CV or website CV.
+- Website AI generation uses the configured OpenAI-compatible provider.
+- No-auth providers remain supported.
+- Website preview updates from profile and website settings.
+- Static files save beneath a configurable local directory.
+- Saved website opens through the local server.
+- All syntax, provider, template, website-rendering, and path tests pass.
