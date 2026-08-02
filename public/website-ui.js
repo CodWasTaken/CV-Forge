@@ -1,6 +1,6 @@
-import { normalizeProfile } from './lib/profile.mjs';
-import { createDefaultWebsite, inlineWebsitePreview, normalizeWebsite, renderWebsiteFiles, sanitizeFolderName } from './lib/website.mjs';
-import { generateWebsiteAction, loadExportStatusAction, saveWebsiteAction } from './website-ui-actions.mjs';
+import { normalizeProfile } from './lib/profile.mjs?v=4';
+import { createDefaultWebsite, inlineWebsitePreview, normalizeWebsite, renderWebsiteFiles } from './lib/website.mjs?v=4';
+import { generateWebsiteAction, loadExportStatusAction, saveWebsiteAction } from './website-ui-actions.mjs?v=4';
 
 const STORAGE_KEY = 'cv-forge-state-v1';
 const accents = { aurora: '#7c5cff', studio: '#e35b36', mono: '#2f61ff' };
@@ -134,6 +134,7 @@ function renderPreview() {
   els.websitePreview.srcdoc = inlineWebsitePreview(renderWebsiteFiles(state.profile, state.website));
 }
 
+
 function saveWebsite() {
   syncFromEditor();
   return saveWebsiteAction({ state, els, notify, persist, fileBaseName, profileHasContent, setLastSavedUrl: (url) => { lastSavedUrl = url; } });
@@ -153,5 +154,11 @@ function notify(message, error = false) {
   toastTimer = setTimeout(() => els.toast.classList.add('hidden'), 3600);
 }
 
-function fileBaseName() { return sanitizeFolderName(state.profile.personal?.name || 'cv', 'cv'); }
+function fileBaseName() {
+  const value = String(state.profile.personal?.name || 'cv').toLowerCase().trim()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/^[.-]+|[.-]+$/g, '')
+    .slice(0, 80);
+  return value || 'cv';
+}
 function capitalize(value) { return value ? value[0].toUpperCase() + value.slice(1) : ''; }

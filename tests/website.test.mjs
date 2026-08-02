@@ -44,12 +44,15 @@ test('sanitizes local export folder names', () => {
   assert.equal(sanitizeFolderName('', 'cv-website'), 'cv-website');
 });
 
+
 test('renders an iframe-safe website preview', () => {
   const files = renderWebsiteFiles(profile, createDefaultWebsite(profile));
   const preview = inlineWebsitePreview(files);
   assert.ok(preview.includes('<style>'));
   assert.ok(!preview.includes('src="script.js"'));
-  assert.ok(!preview.includes('href="#about"'));
+  assert.doesNotMatch(preview, /<a\b[^>]*\shref=/i);
+  assert.ok(preview.includes('data-preview-href="#about"'));
+  assert.ok(preview.includes('<base href="about:blank">'));
   assert.ok(!preview.includes('class="hero-copy reveal"'));
   assert.ok(preview.includes('target="_blank"'));
 });
