@@ -4,7 +4,11 @@ export { renderWebsiteFiles } from './website-render.mjs';
 export function inlineWebsitePreview(files) {
   return files.indexHtml
     .replace('<link rel="stylesheet" href="styles.css">', `<style>${files.stylesCss}</style>`)
-    .replace('  <script src="script.js" defer></script>\n', '');
+    .replace('  <script src="script.js" defer></script>\n', '')
+    .replace(/\s+href="#[^"]*"/g, ' aria-disabled="true" tabindex="-1"')
+    .replace(/<a(?![^>]*\btarget=)([^>]*\bhref="(?:https?:|mailto:|tel:)[^"]+"[^>]*)>/gi, '<a target="_blank" rel="noopener noreferrer"$1>')
+    .replace(/\breveal\b/g, '')
+    .replace('<span id="year"></span>', String(new Date().getFullYear()));
 }
 
 export function sanitizeFolderName(value, fallback = 'cv-website') {
@@ -18,4 +22,3 @@ export function sanitizeFolderName(value, fallback = 'cv-website') {
 export function websiteFileList() {
   return ['index.html', 'styles.css', 'script.js', 'profile.json', 'site.json'];
 }
-
