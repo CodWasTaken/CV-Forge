@@ -1,5 +1,5 @@
 import { normalizeProfile } from './lib/profile.mjs';
-import { createDefaultWebsite, inlineWebsitePreview, normalizeWebsite, renderWebsiteFiles } from './lib/website.mjs';
+import { createDefaultWebsite, inlineWebsitePreview, normalizeWebsite, renderWebsiteFiles, sanitizeFolderName } from './lib/website.mjs';
 import { generateWebsiteAction, loadExportStatusAction, saveWebsiteAction } from './website-ui-actions.mjs';
 
 const STORAGE_KEY = 'cv-forge-state-v1';
@@ -44,7 +44,10 @@ function bind() {
   [[els.accent, 'accent'], [els.headline, 'headline'], [els.subheadline, 'subheadline'], [els.about, 'aboutBody'], [els.contact, 'contactText']]
     .forEach(([element, key]) => element?.addEventListener('input', () => { state.website[key] = element.value; updateWebsite(state.website, false); }));
   els.folder?.addEventListener('input', persist);
-  els.generate?.addEventListener('click', () => generateWebsiteAction({ state, notify, setTab, updateWebsite, button: els.generate, profileHasContent }));
+  els.generate?.addEventListener('click', () => {
+    syncFromEditor();
+    generateWebsiteAction({ state, notify, setTab, updateWebsite, button: els.generate, profileHasContent });
+  });
   els.save?.addEventListener('click', saveWebsite);
   els.saveToolbar?.addEventListener('click', saveWebsite);
   els.open?.addEventListener('click', () => { if (lastSavedUrl) window.open(lastSavedUrl, '_blank', 'noopener'); });
@@ -131,8 +134,8 @@ function renderPreview() {
   els.websitePreview.srcdoc = inlineWebsitePreview(renderWebsiteFiles(state.profile, state.website));
 }
 
-
 function saveWebsite() {
+  syncFromEditor();
   return saveWebsiteAction({ state, els, notify, persist, fileBaseName, profileHasContent, setLastSavedUrl: (url) => { lastSavedUrl = url; } });
 }
 
