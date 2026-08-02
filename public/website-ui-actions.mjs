@@ -1,7 +1,5 @@
-import { sanitizeFolderName } from './lib/website.mjs';
-
 export async function generateWebsiteAction({ state, notify, setTab, updateWebsite, button, profileHasContent }) {
-  if (!profileHasContent(state.profile)) { notify('Add your CV data before generating a website.', true); setTab('details'); return; }
+  if (!profileHasContent(state.profile)) { notify('Add your CV details before generating a website.', true); setTab('details'); return; }
   setBusy(button, true, 'Generating…');
   try {
     const response = await fetch('/api/ai/website', {
@@ -30,7 +28,8 @@ export async function saveWebsiteAction({ state, els, notify, persist, fileBaseN
   const buttons = [els.save, els.saveToolbar].filter(Boolean);
   buttons.forEach((button) => { button.disabled = true; button.dataset.label = button.textContent; button.textContent = 'Saving…'; });
   try {
-    const folderName = sanitizeFolderName(els.folder?.value, `${fileBaseName()}-website`);
+    const fallbackFolder = `${fileBaseName()}-website`;
+    const folderName = String(els.folder?.value || fallbackFolder).trim() || fallbackFolder;
     state.websiteFolder = folderName;
     const response = await fetch('/api/export/website', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
