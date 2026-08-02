@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createDefaultWebsite, normalizeWebsite, renderWebsiteFiles, sanitizeFolderName, websiteFileList } from '../public/lib/website.mjs';
+import { createDefaultWebsite, inlineWebsitePreview, normalizeWebsite, renderWebsiteFiles, sanitizeFolderName, websiteFileList } from '../public/lib/website.mjs';
 
 const profile = {
   personal: { name: 'Ada Lovelace', title: 'Computing Pioneer', email: 'ada@example.com', phone: '', location: 'London', website: '', linkedin: '' },
@@ -42,4 +42,14 @@ test('renders a portable static website bundle and escapes profile data', () => 
 test('sanitizes local export folder names', () => {
   assert.equal(sanitizeFolderName('../../Ada Portfolio'), 'ada-portfolio');
   assert.equal(sanitizeFolderName('', 'cv-website'), 'cv-website');
+});
+
+test('renders an iframe-safe website preview', () => {
+  const files = renderWebsiteFiles(profile, createDefaultWebsite(profile));
+  const preview = inlineWebsitePreview(files);
+  assert.ok(preview.includes('<style>'));
+  assert.ok(!preview.includes('src="script.js"'));
+  assert.ok(!preview.includes('href="#about"'));
+  assert.ok(!preview.includes('class="hero-copy reveal"'));
+  assert.ok(preview.includes('target="_blank"'));
 });
